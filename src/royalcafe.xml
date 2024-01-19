@@ -1,0 +1,136 @@
+-- Crear tabla Categorias
+CREATE TABLE IF NOT EXISTS Categorias (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre VARCHAR(50)
+);
+
+-- Crear tabla Productos
+CREATE TABLE IF NOT EXISTS Productos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre VARCHAR(100),
+    precio DOUBLE,
+    categoria_id INTEGER,
+    FOREIGN KEY (categoria_id) REFERENCES Categorias(id)
+);
+
+-- Crear tabla Compras
+CREATE TABLE IF NOT EXISTS Compras (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    fecha DATE,
+    total DOUBLE,
+    usuario_id INTEGER,
+    FOREIGN KEY (usuario_id) REFERENCES Usuarios(id)
+);
+
+-- Crear tabla DetalleCompra
+CREATE TABLE IF NOT EXISTS DetalleCompra (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    compra_id INTEGER,
+    producto_id INTEGER,
+    cantidad INTEGER,
+    subtotal DOUBLE,
+    FOREIGN KEY (compra_id) REFERENCES Compras(id),
+    FOREIGN KEY (producto_id) REFERENCES Productos(id)
+);
+
+-- Crear tabla Usuarios
+CREATE TABLE IF NOT EXISTS Usuarios (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username VARCHAR(50),
+    password VARCHAR(50)
+);
+
+-- Agregar Categoría 'General'
+INSERT INTO Categorias (nombre) VALUES ('General');
+
+-- Agregar 15 Productos
+INSERT INTO Productos (nombre, precio, categoria_id) VALUES
+    ('Cold Coffee', 5000, 1),
+    ('Cappuccino Coffee', 6000, 1),
+    ('Chocolate Coffee', 7000, 1),
+    ('Green Tea', 4500, 1),
+    ('Mineral Water', 2000, 1),
+    ('Strawberry Cake', 8000, 1),
+    ('Chocolate Cake', 7500, 1),
+    ('Fruits Cake', 9000, 1),
+    ('Rainbow Cake', 10000, 1),
+    ('Coke', 2500, 1),
+    ('Vegetarian Pizza', 12000, 1),
+    ('Chicken Burger', 9000, 1),
+    ('Chicken Noodles', 8500, 1),
+    ('7Up', 2500, 1),
+    ('Orange Juice', 4000, 1);
+
+-- Agregar Usuario Vendedor
+INSERT INTO Usuarios (username, password) VALUES ('vendedor', 'password');
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.*;
+
+public class MainFrame extends JFrame {
+
+    private JTextField userTextField;
+    private JPasswordField passwordField;
+
+    public MainFrame() {
+        initComponents();
+    }
+
+    private void initComponents() {
+        // Configurar componentes de la GUI, como JTextField, JPasswordField, JButton, etc.
+
+        // Agregar ActionListener al botón de verificación
+        JButton verifyButton = new JButton("Verificar");
+        verifyButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                verificar();
+            }
+        });
+
+        // Configurar el diseño de la GUI y agregar componentes al contenedor
+
+        // Configurar la operación de cierre y la visibilidad de la ventana
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        pack();
+        setLocationRelativeTo(null);
+        setVisible(true);
+    }
+
+    private void verificar() {
+        String usuario = userTextField.getText().trim();
+        char[] contrasena = passwordField.getPassword();
+        String contrasenaStr = new String(contrasena);
+
+        // Realizar la verificación en la base de datos (código incompleto)
+        try {
+            Connection connection = DriverManager.getConnection("url_de_tu_base_de_datos", "usuario", "contrasena");
+            String query = "SELECT * FROM tabla_usuarios WHERE usuario = ? AND contrasena = ?";
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setString(1, usuario);
+                statement.setString(2, contrasenaStr);
+                ResultSet resultSet = statement.executeQuery();
+
+                if (resultSet.next()) {
+                    // Usuario y contraseña son correctos
+                    JOptionPane.showMessageDialog(this, "Inicio de sesión exitoso");
+                } else {
+                    JOptionPane.showMessageDialog(this, "Usuario o contraseña incorrectos");
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error al conectar con la base de datos");
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new MainFrame();
+            }
+        });
+    }
+}
